@@ -35,7 +35,7 @@ jobs:
         run: dotnet --list-sdks
 
       - name: Restore project dependencies
-        run: dotnet restore -p:TargetFramework=${{ matrix.framework }}
+        run: dotnet restore -p:TargetFramework=${{ matrix.framework }} SdetBootcampDay1
 
       - name: Build the project
         run: dotnet build --framework ${{ matrix.framework }} --no-restore
