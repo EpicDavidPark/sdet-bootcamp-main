@@ -1,0 +1,44 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  # For pull requests, cancel all currently-running jobs for this workflow
+  # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [8.0.x]
+        include:
+          - dotnet-version: 8.0.x
+            framework: net8.0
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: List installed .NET SDKs
+        run: dotnet --list-sdks
+
+      - name: Restore project dependencies
+        run: dotnet restore -p:TargetFramework=${{ matrix.framework }}
+
+      - name: Build the project
+        run: dotnet build --framework ${{ matrix.framework }} --no-restore
+
+      - name: Run tests from day 1
+        run: dotnet test --framework ${{ matrix.framework }} --no-restore --no-build --verbosity normal
